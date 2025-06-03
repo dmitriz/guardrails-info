@@ -179,23 +179,30 @@ We welcome contributions from the AI safety and research community:
 
 ## 📈 Roadmap
 
-### Immediate Priorities (Q1 2024)
-- [ ] Advanced adversarial testing methodologies
-- [ ] Multi-modal guardrail pattern documentation
-- [ ] Enterprise deployment case studies
-- [ ] Automated evaluation tool development
+### Strategic Overview
+Our roadmap balances immediate practical needs with long-term research advancement. Detailed task tracking, dependencies, and implementation notes are maintained in our [Future Plans & Task Tracking](workflow/future-plans.md) document.
 
-### Medium-term Goals (Q2-Q3 2024)
-- [ ] Cross-framework compatibility analysis
-- [ ] Regulatory compliance mapping
-- [ ] Performance optimization research
-- [ ] Community contribution platform
+### Immediate Priorities (Q1 2025)
+- [ ] **Multi-Modal Guardrail Patterns**: Advanced protection for images, audio, video content
+- [ ] **Real-Time Adaptive Defense Systems**: Dynamic threat response implementation guide
+- [ ] **Constitutional AI Implementation**: Practical self-improving safety system deployment
+- [ ] **Enterprise Case Studies**: Real-world Fortune 500 deployment documentation
+- [ ] **Automated Red-Team Testing**: Adversarial testing framework and tools
 
-### Long-term Vision (Q4 2024+)
-- [ ] AI safety standard development
-- [ ] International collaboration initiatives  
-- [ ] Next-generation AI architecture safety
-- [ ] Global guardrail coordination mechanisms
+### Medium-term Goals (Q2-Q3 2025)
+- [ ] **Federated Guardrail Systems**: Cross-organizational collaborative safety research
+- [ ] **Cross-Framework Compatibility**: Interoperability analysis and migration guides
+- [ ] **Standardized Safety Benchmarks**: Comprehensive evaluation framework development
+- [ ] **Regulatory Compliance Mapping**: Regulation-to-guardrail pattern database
+- [ ] **Performance Optimization**: Advanced latency reduction techniques
+
+### Long-term Vision (Q4 2025+)
+- [ ] **Next-Generation AI Architecture Safety**: Quantum computing and AGI safety considerations
+- [ ] **International Collaboration**: Global AI safety governance framework development
+- [ ] **Cross-Cultural Safety Adaptation**: Culturally-aware guardrail systems
+- [ ] **Neuro-Symbolic Safety**: Hybrid symbolic-neural guardrail approaches
+
+> **Detailed Planning**: See [workflow/future-plans.md](workflow/future-plans.md) for comprehensive task tracking, research insights, implementation dependencies, and success criteria.
 
 ## 📞 Contact and Support
 
