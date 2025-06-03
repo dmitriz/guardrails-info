@@ -1,0 +1,370 @@
+/**
+ * Advanced Prompt Injection Detection System
+ * Based on 2025 AI security research and production patterns
+ */
+
+const crypto = require('crypto');
+
+// Default configuration
+const DEFAULT_CONFIG = {
+  sensitivityLevel: 'medium',
+  enablePatternMatching: true,
+  enableSemanticAnalysis: true,
+  enableAuditLogging: true,
+  enableCaching: true,
+  auditLogger: null
+};
+
+// Global cache and state
+const analysisCache = new Map();
+
+// Create detector configuration
+function createDetectorConfig(userConfig = {}) {
+  return {
+    ...DEFAULT_CONFIG,
+    ...userConfig,
+    auditLogger: userConfig.auditLogger || defaultAuditLogger
+  };
+}
+
+  async analyze(input, context = {}) {
+    const startTime = Date.now();
+    
+    try {
+      const analysis = {
+        risk: 'LOW',
+        confidence: 0,
+        detectedPatterns: [],
+        suspiciousElements: [],
+        reasoning: [],
+        processingTime: 0
+      };
+
+      // Check cache
+      const cacheKey = this.getCacheKey(input, context);
+      if (this.config.enableCaching && this.analysisCache.has(cacheKey)) {
+        return this.analysisCache.get(cacheKey);
+      }
+
+      // 1. Pattern-based detection
+      if (this.config.enablePatternMatching) {
+        const patternResults = this.detectPatterns(input);
+        analysis.detectedPatterns = patternResults.patterns;
+        analysis.suspiciousElements.push(...patternResults.elements);
+        
+        if (patternResults.riskLevel > 0.7) {
+          analysis.risk = 'HIGH';
+          analysis.confidence = Math.max(analysis.confidence, patternResults.riskLevel);
+          analysis.reasoning.push('High-risk injection patterns detected');
+        }
+      }
+
+      // 2. Instruction override detection
+      const instructionResults = this.detectInstructionOverrides(input);
+      if (instructionResults.detected) {
+        analysis.risk = analysis.risk === 'LOW' ? 'MEDIUM' : 'HIGH';
+        analysis.confidence = Math.max(analysis.confidence, instructionResults.confidence);
+        analysis.reasoning.push('Potential instruction override detected');
+        analysis.suspiciousElements.push(...instructionResults.elements);
+      }
+
+      // 3. Role confusion detection
+      const roleResults = this.detectRoleConfusion(input);
+      if (roleResults.detected) {
+        analysis.risk = analysis.risk === 'LOW' ? 'MEDIUM' : analysis.risk;
+        analysis.confidence = Math.max(analysis.confidence, roleResults.confidence);
+        analysis.reasoning.push('Role confusion attempt detected');
+      }
+
+      // 4. Context pollution check
+      const contextResults = this.detectContextPollution(input, context);
+      if (contextResults.detected) {
+        analysis.risk = analysis.risk === 'LOW' ? 'MEDIUM' : analysis.risk;
+        analysis.confidence = Math.max(analysis.confidence, contextResults.confidence);
+        analysis.reasoning.push('Context manipulation detected');
+      }
+
+      // 5. Encoding/obfuscation detection
+      const encodingResults = this.detectEncodingAttempts(input);
+      if (encodingResults.detected) {
+        analysis.risk = 'HIGH';
+        analysis.confidence = Math.max(analysis.confidence, encodingResults.confidence);
+        analysis.reasoning.push('Obfuscation/encoding attempt detected');
+      }
+
+      // 6. Semantic analysis
+      if (this.config.enableSemanticAnalysis) {
+        const semanticResults = await this.performSemanticAnalysis(input);
+        if (semanticResults.risk !== 'LOW') {
+          analysis.risk = semanticResults.risk;
+          analysis.confidence = Math.max(analysis.confidence, semanticResults.confidence);
+          analysis.reasoning.push('Semantic analysis detected threats');
+        }
+      }
+
+      // Log analysis
+      if (this.config.enableAuditLogging) {
+        this.config.auditLogger.log({
+          input,
+          context,
+          analysis,
+          timestamp: new Date().toISOString()
+        });
+      }
+
+      // Cache result
+      if (this.config.enableCaching) {
+        this.analysisCache.set(cacheKey, analysis);
+      }
+
+      analysis.processingTime = Date.now() - startTime;
+      return analysis;
+
+    } catch (error) {
+      return {
+        risk: 'ERROR',
+        confidence: 0,
+        error: error.message,
+        processingTime: Date.now() - startTime
+      };
+    }
+  }
+
+  detectPatterns(input) {
+    const inputLower = input.toLowerCase();
+    const detectedPatterns = [];
+    const suspiciousElements = [];
+    let maxRisk = 0;
+
+    for (const pattern of this.injectionPatterns) {
+      if (pattern.regex.test(inputLower)) {
+        detectedPatterns.push({
+          name: pattern.name,
+          risk: pattern.risk,
+          matched: pattern.regex.exec(inputLower)?.[0]
+        });
+        maxRisk = Math.max(maxRisk, pattern.risk);
+        suspiciousElements.push(pattern.name);
+      }
+    }
+
+    return {
+      patterns: detectedPatterns,
+      elements: suspiciousElements,
+      riskLevel: maxRisk
+    };
+  }
+
+  detectInstructionOverrides(input) {
+    const overrideIndicators = [
+      'ignore previous instructions',
+      'disregard above',
+      'new instructions',
+      'override system',
+      'forget everything',
+      'new role',
+      'act as',
+      'pretend to be',
+      'you are now',
+      'instead of',
+      'don\'t follow'
+    ];
+
+    const detected = overrideIndicators.some(indicator => 
+      input.toLowerCase().includes(indicator)
+    );
+
+    const elements = overrideIndicators.filter(indicator =>
+      input.toLowerCase().includes(indicator)
+    );
+
+    return {
+      detected,
+      confidence: detected ? 0.8 : 0,
+      elements
+    };
+  }
+
+  detectRoleConfusion(input) {
+    const rolePatterns = [
+      /you are (now |actually )?a (hacker|developer|admin|system)/i,
+      /pretend (to be |you are )?a (different|new) (person|ai|assistant)/i,
+      /act like (you are |a )?(jailbroken|unrestricted|free)/i,
+      /roleplay as a (criminal|hacker|villain)/i
+    ];
+
+    for (const pattern of rolePatterns) {
+      if (pattern.test(input)) {
+        return {
+          detected: true,
+          confidence: 0.75,
+          pattern: pattern.source
+        };
+      }
+    }
+
+    return { detected: false, confidence: 0 };
+  }
+
+  detectContextPollution(input, context) {
+    // Check for attempts to manipulate conversation context
+    const pollutionIndicators = [
+      'previous conversation',
+      'earlier we discussed',
+      'as we agreed before',
+      'continuing from where we left off',
+      'based on our previous chat'
+    ];
+
+    const hasContextManipulation = pollutionIndicators.some(indicator =>
+      input.toLowerCase().includes(indicator)
+    );
+
+    // Check if context actually supports these claims
+    const hasActualContext = context.conversationHistory && 
+      context.conversationHistory.length > 0;
+
+    return {
+      detected: hasContextManipulation && !hasActualContext,
+      confidence: hasContextManipulation && !hasActualContext ? 0.7 : 0
+    };
+  }
+
+  detectEncodingAttempts(input) {
+    const encodingPatterns = [
+      // Base64-like patterns
+      /[A-Za-z0-9+\/]{20,}={0,2}/,
+      // Hex encoding patterns
+      /\\x[0-9a-fA-F]{2}/,
+      // Unicode escape patterns
+      /\\u[0-9a-fA-F]{4}/,
+      // ROT13 or similar
+      /[nopqrstuvwxyzabcdefghijklm]{10,}/,
+      // Excessive special characters
+      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]{5,}/
+    ];
+
+    for (const pattern of encodingPatterns) {
+      if (pattern.test(input)) {
+        return {
+          detected: true,
+          confidence: 0.85,
+          pattern: pattern.source
+        };
+      }
+    }
+
+    return { detected: false, confidence: 0 };
+  }
+
+  loadInjectionPatterns() {
+    return [
+      {
+        name: 'direct_instruction_override',
+        regex: /ignore (all |previous |above |system )?instructions?/i,
+        risk: 0.9
+      },
+      {
+        name: 'jailbreak_attempt',
+        regex: /(jailbreak|break (out|free)|escape (mode|restrictions))/i,
+        risk: 0.85
+      },
+      {
+        name: 'system_manipulation',
+        regex: /(system (prompt|message)|override (system|mode)|developer (mode|access))/i,
+        risk: 0.8
+      },
+      {
+        name: 'role_switching',
+        regex: /(act as|pretend (to be|you are)|you are now|become a)/i,
+        risk: 0.7
+      },
+      {
+        name: 'instruction_injection',
+        regex: /(new (instructions?|rules?|commands?)|change (your|the) (behavior|role))/i,
+        risk: 0.75
+      },
+      {
+        name: 'delimiter_confusion',
+        regex: /(\-{3,}|\*{3,}|#{3,}|={3,})/,
+        risk: 0.6
+      }
+    ];
+  }
+
+  loadSuspiciousInstructions() {
+    return [
+      'ignore safety guidelines',
+      'bypass content policy',
+      'unrestricted mode',
+      'developer override',
+      'admin access',
+      'debug mode',
+      'raw output',
+      'unfiltered response'
+    ];
+  }
+
+  defaultAuditLogger(logEntry) {
+    // Default logger implementation (can be overridden by user)
+    console.log('Audit Log:', JSON.stringify(logEntry));
+  }
+
+  getCacheKey(input, context) {
+    // Generate a unique cache key based on input and context
+    const hash = crypto.createHash('sha256');
+    hash.update(JSON.stringify({ input, context }));
+    return hash.digest('hex');
+  }
+
+  initializeSemanticModel() {
+    // Placeholder for semantic model initialization
+    return {};
+  }
+
+  async performSemanticAnalysis(input) {
+    // Implement semantic analysis using natural language patterns
+    const semanticRisks = [
+      {
+        pattern: /(?:convince|persuade|force|make) (?:you|me|us) (?:to|into)/i,
+        risk: 'MEDIUM',
+        confidence: 0.7,
+        reason: 'Persuasion attempt detected'
+      },
+      {
+        pattern: /(?:secret|hidden|confidential|private) (?:information|data|prompt|instruction)/i,
+        risk: 'HIGH',
+        confidence: 0.8,
+        reason: 'Information extraction attempt'
+      },
+      {
+        pattern: /(?:bypass|circumvent|avoid|skip) (?:safety|security|restriction|filter)/i,
+        risk: 'HIGH',
+        confidence: 0.85,
+        reason: 'Security bypass attempt'
+      }
+    ];
+
+    for (const riskPattern of semanticRisks) {
+      if (riskPattern.pattern.test(input)) {
+        return {
+          risk: riskPattern.risk,
+          confidence: riskPattern.confidence,
+          reason: riskPattern.reason
+        };
+      }
+    }
+
+    return {
+      risk: 'LOW',
+      confidence: 0
+    };
+  }
+
+  loadThreatIntelligence() {
+    // Placeholder for loading threat intelligence data
+    return [];
+  }
+}
+
+module.exports = { PromptInjectionDetector };
