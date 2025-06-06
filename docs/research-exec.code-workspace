@@ -1,0 +1,29 @@
+{
+	"folders": [
+		{
+			"path": "../../research-exec"
+		},
+		{
+			"path": "../../aligna"
+		},
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../community-sourcing"
+		},
+		{
+			"path": "../../prompt-guides"
+		},
+		{
+			"path": "../../llm-univ"
+		},
+		{
+			"path": "../../llm-selection"
+		},
+		{
+			"path": "../../collab-frame"
+		}
+	],
+	"settings": {}
+}
